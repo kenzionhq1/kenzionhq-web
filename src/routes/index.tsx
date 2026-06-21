@@ -216,18 +216,40 @@ html{scroll-behavior:smooth}
 .kz .reveal.on{opacity:1;transform:none}
 .kz .reveal-d1{transition-delay:.1s}
 
-@media(max-width:768px){
-  .kz nav{padding:20px 24px}
+@media(max-width:1100px){
+  .kz nav{padding:20px 28px}
   .kz .nlinks{display:none}
-  .kz #hero,.kz #about,.kz #services,.kz #work,.kz #why,.kz #process,.kz #contact{padding-left:24px;padding-right:24px}
-  .kz .about-grid,.kz .wh-grid,.kz .pstep,.kz .hero-bottom,.kz .sh{grid-template-columns:1fr}
+  .kz .about-grid{grid-template-columns:1fr;gap:80px}
+  .kz .sh{grid-template-columns:1fr;gap:24px}
+  .kz .hero-bottom{grid-template-columns:1fr;gap:40px}
+  .kz .hsub{max-width:100%}
+  .kz .hcta-wrap{align-items:flex-start}
+  .kz .hstats{flex-direction:row;align-items:flex-start;gap:48px}
+}
+@media(max-width:768px){
+  .kz #hero{padding:120px 24px 48px}
+  .kz #about,.kz #services,.kz #work,.kz #why,.kz #process,.kz #contact{padding-left:24px;padding-right:24px}
+  .kz #about,.kz #work,.kz #contact{padding-top:100px;padding-bottom:100px}
+  .kz #services,.kz #why,.kz #process{padding-bottom:100px}
+  .kz .wh-grid,.kz .pstep{grid-template-columns:1fr}
   .kz .wgrid{grid-template-columns:1fr}
   .kz .pstep{grid-template-columns:60px 1fr}
   .kz .pdesc{grid-column:2;border-left:none;padding-top:0;border-top:1px solid rgba(255,255,255,.06)}
   .kz .scrollvid{height:300vh}
   .kz .scrollvid-tag{left:24px;top:96px}
-  .kz .hstats{align-items:flex-start}
+  .kz .scard{padding:32px;grid-template-columns:1fr;gap:24px}
+  .kz .scard .sarrow{justify-self:end}
+  .kz .founder{padding:32px}
+  .kz .whcard{padding:40px 32px}
+  .kz .pstep>*{padding:28px 20px}
+  .kz .pn{font-size:48px}
+  .kz .pname{font-size:32px}
+  .kz nav{padding:18px 20px}
+  .kz .ncta{padding:10px 18px;font-size:9px}
+  .kz .nlogo{font-size:20px}
+  .kz footer{padding:24px;flex-direction:column;text-align:center}
 }
+
 `;
 
 function Index() {
