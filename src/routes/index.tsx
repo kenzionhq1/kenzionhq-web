@@ -374,19 +374,69 @@ function Index() {
     return () => obs.disconnect();
   }, []);
 
-  // Scroll-scrubbed video + parallax bg text
+  // Preload frame images
   useEffect(() => {
-    const video = videoRef.current;
+    let cancelled = false;
+    frameUrls.forEach((url, i) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.crossOrigin = "anonymous";
+      const done = () => {
+        if (cancelled) return;
+        framesRef.current[i] = img;
+        setLoadedFrames((n) => n + 1);
+        if (i === 0) requestAnimationFrame(() => drawFrame(0));
+      };
+      img.onload = done;
+      img.onerror = () => {
+        if (cancelled) return;
+        setLoadedFrames((n) => n + 1);
+      };
+      img.src = url;
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Canvas frame draw (cover behavior, DPR-aware)
+  const drawFrame = (idx: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const img = framesRef.current[idx];
+    if (!img) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = rect.width;
+    const cssH = rect.height;
+    if (cssW === 0 || cssH === 0) return;
+    const pxW = Math.floor(cssW * dpr);
+    const pxH = Math.floor(cssH * dpr);
+    if (canvas.width !== pxW || canvas.height !== pxH) {
+      canvas.width = pxW;
+      canvas.height = pxH;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.max(cssW / iw, cssH / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = (cssW - dw) / 2;
+    const dy = (cssH - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  };
+
+  // Scroll-driven frame scrubbing
+  useEffect(() => {
     const wrap = vidWrapRef.current;
     const bar = barRef.current;
     const bg = bgTextRef.current;
-    if (!video || !wrap || !bar) return;
+    if (!wrap || !bar) return;
 
-    let duration = 0;
-    const onMeta = () => { duration = video.duration || 0; };
-    video.addEventListener("loadedmetadata", onMeta);
-    if (video.readyState >= 1) duration = video.duration || 0;
-
+    let rafId = 0;
     let ticking = false;
     const update = () => {
       ticking = false;
@@ -395,24 +445,49 @@ function Index() {
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
       const progress = total > 0 ? scrolled / total : 0;
       bar.style.width = progress * 100 + "%";
-      if (duration > 0) {
-        try { video.currentTime = progress * duration; } catch {}
+      const n = framesRef.current.length;
+      if (n > 0) {
+        let idx = Math.round(progress * (totalFrames - 1));
+        if (idx < 0) idx = 0;
+        if (idx > totalFrames - 1) idx = totalFrames - 1;
+        // clamp to nearest loaded frame
+        let probe = idx;
+        while (probe >= 0 && !framesRef.current[probe]) probe--;
+        if (probe < 0) {
+          probe = idx;
+          while (probe < totalFrames && !framesRef.current[probe]) probe++;
+        }
+        if (probe >= 0 && probe < totalFrames && probe !== lastIdxRef.current) {
+          lastIdxRef.current = probe;
+          drawFrame(probe);
+        }
       }
       if (bg) bg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
     };
     const onScroll = () => {
       if (!ticking) {
         ticking = true;
-        requestAnimationFrame(update);
+        rafId = requestAnimationFrame(update);
       }
     };
+    const onResize = () => {
+      if (lastIdxRef.current >= 0) drawFrame(lastIdxRef.current);
+      update();
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(() => {
+      if (lastIdxRef.current >= 0) drawFrame(lastIdxRef.current);
+    });
+    if (canvasRef.current) ro.observe(canvasRef.current);
     update();
     return () => {
       window.removeEventListener("scroll", onScroll);
-      video.removeEventListener("loadedmetadata", onMeta);
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [totalFrames]);
 
   return (
     <div className="kz">
