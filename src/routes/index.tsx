@@ -125,7 +125,11 @@ html{scroll-behavior:smooth}
 
 .kz .scrollvid{height:400vh;position:relative;z-index:1}
 .kz .scrollvid-sticky{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
-.kz .scrollvid-sticky video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
+.kz .scrollvid-sticky video,.kz .scrollvid-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;opacity:.95}
+.kz .scrollvid-loader{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:5;font-family:var(--mono);color:rgba(255,255,255,.6);font-size:11px;letter-spacing:.25em;text-transform:uppercase;gap:14px;transition:opacity .5s ease}
+.kz .scrollvid-loader.gone{opacity:0;pointer-events:none}
+.kz .scrollvid-loader .lbar{width:220px;height:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.kz .scrollvid-loader .lbar i{display:block;height:100%;background:linear-gradient(to right,var(--c),var(--c2));transition:width .15s linear}
 .kz .vid-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,224,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,224,.04) 1px,transparent 1px);background-size:80px 80px;-webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,black,transparent);mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,black,transparent)}
 .kz .scrollvid-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:3;pointer-events:none;background:linear-gradient(to bottom,rgba(4,4,10,.3),transparent 30%,transparent 70%,rgba(4,4,10,.5))}
 .kz .vid-label{font-family:var(--mono);font-size:10px;color:var(--c);letter-spacing:.3em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:20px}
