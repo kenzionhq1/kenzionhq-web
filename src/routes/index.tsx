@@ -612,7 +612,7 @@ function Index() {
       <section className="scrollvid" id="scrollvid" ref={vidWrapRef as React.RefObject<HTMLElement>}>
         <div className="scrollvid-sticky">
           <div className="scrollvid-tag">// kenzionhq.reel</div>
-          <video ref={videoRef} muted playsInline preload="auto" src={videoAsset.url} />
+          <canvas ref={canvasRef} className="scrollvid-canvas" />
           <div className="vid-grid" />
           <div className="scrollvid-overlay">
             <div className="vid-label">Experience KENZIONhq</div>
