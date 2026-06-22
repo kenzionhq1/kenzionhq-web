@@ -623,6 +623,12 @@ function Index() {
             <div className="vid-title">Digital.<br /><em>Elevated.</em></div>
           </div>
           <div className="scrollvid-progress"><div className="bar" ref={barRef} /></div>
+          {totalFrames > 0 && (
+            <div className={`scrollvid-loader${loadedFrames >= totalFrames ? " gone" : ""}`}>
+              <div>Loading frames {loadedFrames} / {totalFrames}</div>
+              <div className="lbar"><i style={{ width: `${(loadedFrames / totalFrames) * 100}%` }} /></div>
+            </div>
+          )}
         </div>
       </section>
 
