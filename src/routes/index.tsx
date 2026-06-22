@@ -30,7 +30,7 @@ const CSS = `
   --mono:'JetBrains Mono',monospace;
   --disp:'Bebas Neue',sans-serif;
   --body:'Syne',sans-serif;
-  background:var(--bg);color:var(--w);font-family:var(--body);overflow-x:hidden;
+  background:var(--bg);color:var(--w);font-family:var(--body);overflow-x:clip;
 }
 @media(min-width:1100px){.kz{cursor:none}}
 .kz a,.kz button{color:inherit}
