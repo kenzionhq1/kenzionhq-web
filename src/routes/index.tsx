@@ -239,7 +239,7 @@ html{scroll-behavior:smooth}
   .kz .wgrid{grid-template-columns:1fr}
   .kz .pstep{grid-template-columns:60px 1fr}
   .kz .pdesc{grid-column:2;border-left:none;padding-top:0;border-top:1px solid rgba(255,255,255,.06)}
-  .kz .scrollvid{height:300vh}
+  .kz .scrollvid{height:600vh}
   .kz .scrollvid-tag{left:24px;top:96px}
   .kz .scard{padding:32px;grid-template-columns:1fr;gap:24px}
   .kz .scard .sarrow{justify-self:end}
