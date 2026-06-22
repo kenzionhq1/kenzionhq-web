@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import videoAsset from "@/assets/kenzion_reels.mp4.asset.json";
+import { useEffect, useRef, useState } from "react";
+import frameUrls from "@/assets/frames/manifest.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
