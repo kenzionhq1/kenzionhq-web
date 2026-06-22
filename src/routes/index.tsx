@@ -256,10 +256,14 @@ function Index() {
   const rainRef = useRef<HTMLCanvasElement | null>(null);
   const curRef = useRef<HTMLDivElement | null>(null);
   const cur2Ref = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const framesRef = useRef<HTMLImageElement[]>([]);
+  const lastIdxRef = useRef<number>(-1);
   const vidWrapRef = useRef<HTMLElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   const bgTextRef = useRef<HTMLDivElement | null>(null);
+  const [loadedFrames, setLoadedFrames] = useState(0);
+  const totalFrames = frameUrls.length;
 
   // Matrix rain
   useEffect(() => {
