@@ -123,7 +123,7 @@ html{scroll-behavior:smooth}
 .kz .sarrow{font-size:24px;color:rgba(0,255,224,.3);transition:all .4s}
 .kz .scard:hover .sarrow{color:var(--c);transform:translateX(8px)}
 
-.kz .scrollvid{height:400vh;position:relative;z-index:1}
+.kz .scrollvid{height:800vh;position:relative;z-index:1}
 .kz .scrollvid-sticky{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
 .kz .scrollvid-sticky video,.kz .scrollvid-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;opacity:.95}
 .kz .scrollvid-loader{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:5;font-family:var(--mono);color:rgba(255,255,255,.6);font-size:11px;letter-spacing:.25em;text-transform:uppercase;gap:14px;transition:opacity .5s ease}
