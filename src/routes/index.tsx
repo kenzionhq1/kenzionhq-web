@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import videoAsset from "@/assets/kenzion_reels.mp4.asset.json";
+import { useEffect, useRef, useState } from "react";
+import frameUrls from "@/assets/frames/manifest.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -125,7 +125,11 @@ html{scroll-behavior:smooth}
 
 .kz .scrollvid{height:400vh;position:relative;z-index:1}
 .kz .scrollvid-sticky{position:sticky;top:0;height:100vh;overflow:hidden;background:#000}
-.kz .scrollvid-sticky video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
+.kz .scrollvid-sticky video,.kz .scrollvid-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;opacity:.95}
+.kz .scrollvid-loader{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;z-index:5;font-family:var(--mono);color:rgba(255,255,255,.6);font-size:11px;letter-spacing:.25em;text-transform:uppercase;gap:14px;transition:opacity .5s ease}
+.kz .scrollvid-loader.gone{opacity:0;pointer-events:none}
+.kz .scrollvid-loader .lbar{width:220px;height:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.kz .scrollvid-loader .lbar i{display:block;height:100%;background:linear-gradient(to right,var(--c),var(--c2));transition:width .15s linear}
 .kz .vid-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,224,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,224,.04) 1px,transparent 1px);background-size:80px 80px;-webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,black,transparent);mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,black,transparent)}
 .kz .scrollvid-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:3;pointer-events:none;background:linear-gradient(to bottom,rgba(4,4,10,.3),transparent 30%,transparent 70%,rgba(4,4,10,.5))}
 .kz .vid-label{font-family:var(--mono);font-size:10px;color:var(--c);letter-spacing:.3em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:20px}
@@ -256,10 +260,14 @@ function Index() {
   const rainRef = useRef<HTMLCanvasElement | null>(null);
   const curRef = useRef<HTMLDivElement | null>(null);
   const cur2Ref = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const framesRef = useRef<HTMLImageElement[]>([]);
+  const lastIdxRef = useRef<number>(-1);
   const vidWrapRef = useRef<HTMLElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   const bgTextRef = useRef<HTMLDivElement | null>(null);
+  const [loadedFrames, setLoadedFrames] = useState(0);
+  const totalFrames = frameUrls.length;
 
   // Matrix rain
   useEffect(() => {
@@ -370,19 +378,69 @@ function Index() {
     return () => obs.disconnect();
   }, []);
 
-  // Scroll-scrubbed video + parallax bg text
+  // Preload frame images
   useEffect(() => {
-    const video = videoRef.current;
+    let cancelled = false;
+    frameUrls.forEach((url, i) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.crossOrigin = "anonymous";
+      const done = () => {
+        if (cancelled) return;
+        framesRef.current[i] = img;
+        setLoadedFrames((n) => n + 1);
+        if (i === 0) requestAnimationFrame(() => drawFrame(0));
+      };
+      img.onload = done;
+      img.onerror = () => {
+        if (cancelled) return;
+        setLoadedFrames((n) => n + 1);
+      };
+      img.src = url;
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Canvas frame draw (cover behavior, DPR-aware)
+  const drawFrame = (idx: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const img = framesRef.current[idx];
+    if (!img) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = rect.width;
+    const cssH = rect.height;
+    if (cssW === 0 || cssH === 0) return;
+    const pxW = Math.floor(cssW * dpr);
+    const pxH = Math.floor(cssH * dpr);
+    if (canvas.width !== pxW || canvas.height !== pxH) {
+      canvas.width = pxW;
+      canvas.height = pxH;
+    }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = Math.max(cssW / iw, cssH / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = (cssW - dw) / 2;
+    const dy = (cssH - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  };
+
+  // Scroll-driven frame scrubbing
+  useEffect(() => {
     const wrap = vidWrapRef.current;
     const bar = barRef.current;
     const bg = bgTextRef.current;
-    if (!video || !wrap || !bar) return;
+    if (!wrap || !bar) return;
 
-    let duration = 0;
-    const onMeta = () => { duration = video.duration || 0; };
-    video.addEventListener("loadedmetadata", onMeta);
-    if (video.readyState >= 1) duration = video.duration || 0;
-
+    let rafId = 0;
     let ticking = false;
     const update = () => {
       ticking = false;
@@ -391,24 +449,49 @@ function Index() {
       const scrolled = Math.min(Math.max(-rect.top, 0), total);
       const progress = total > 0 ? scrolled / total : 0;
       bar.style.width = progress * 100 + "%";
-      if (duration > 0) {
-        try { video.currentTime = progress * duration; } catch {}
+      const n = framesRef.current.length;
+      if (n > 0) {
+        let idx = Math.round(progress * (totalFrames - 1));
+        if (idx < 0) idx = 0;
+        if (idx > totalFrames - 1) idx = totalFrames - 1;
+        // clamp to nearest loaded frame
+        let probe = idx;
+        while (probe >= 0 && !framesRef.current[probe]) probe--;
+        if (probe < 0) {
+          probe = idx;
+          while (probe < totalFrames && !framesRef.current[probe]) probe++;
+        }
+        if (probe >= 0 && probe < totalFrames && probe !== lastIdxRef.current) {
+          lastIdxRef.current = probe;
+          drawFrame(probe);
+        }
       }
       if (bg) bg.style.transform = `translateY(${window.scrollY * 0.3}px)`;
     };
     const onScroll = () => {
       if (!ticking) {
         ticking = true;
-        requestAnimationFrame(update);
+        rafId = requestAnimationFrame(update);
       }
     };
+    const onResize = () => {
+      if (lastIdxRef.current >= 0) drawFrame(lastIdxRef.current);
+      update();
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    const ro = new ResizeObserver(() => {
+      if (lastIdxRef.current >= 0) drawFrame(lastIdxRef.current);
+    });
+    if (canvasRef.current) ro.observe(canvasRef.current);
     update();
     return () => {
       window.removeEventListener("scroll", onScroll);
-      video.removeEventListener("loadedmetadata", onMeta);
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [totalFrames]);
 
   return (
     <div className="kz">
@@ -533,13 +616,19 @@ function Index() {
       <section className="scrollvid" id="scrollvid" ref={vidWrapRef as React.RefObject<HTMLElement>}>
         <div className="scrollvid-sticky">
           <div className="scrollvid-tag">// kenzionhq.reel</div>
-          <video ref={videoRef} muted playsInline preload="auto" src={videoAsset.url} />
+          <canvas ref={canvasRef} className="scrollvid-canvas" />
           <div className="vid-grid" />
           <div className="scrollvid-overlay">
             <div className="vid-label">Experience KENZIONhq</div>
             <div className="vid-title">Digital.<br /><em>Elevated.</em></div>
           </div>
           <div className="scrollvid-progress"><div className="bar" ref={barRef} /></div>
+          {totalFrames > 0 && (
+            <div className={`scrollvid-loader${loadedFrames >= totalFrames ? " gone" : ""}`}>
+              <div>Loading frames {loadedFrames} / {totalFrames}</div>
+              <div className="lbar"><i style={{ width: `${(loadedFrames / totalFrames) * 100}%` }} /></div>
+            </div>
+          )}
         </div>
       </section>
 
