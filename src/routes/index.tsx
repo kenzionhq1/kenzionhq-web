@@ -618,10 +618,7 @@ function Index() {
           <div className="scrollvid-tag">// kenzionhq.reel</div>
           <canvas ref={canvasRef} className="scrollvid-canvas" />
           <div className="vid-grid" />
-          <div className="scrollvid-overlay">
-            <div className="vid-label">Experience KENZIONhq</div>
-            <div className="vid-title">Digital.<br /><em>Elevated.</em></div>
-          </div>
+
           <div className="scrollvid-progress"><div className="bar" ref={barRef} /></div>
           {totalFrames > 0 && (
             <div className={`scrollvid-loader${loadedFrames >= totalFrames ? " gone" : ""}`}>
