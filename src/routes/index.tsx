@@ -1549,6 +1549,14 @@ function Index() {
   const vidWrapRef = useRef<HTMLElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   const bgTextRef = useRef<HTMLDivElement | null>(null);
+  const hudFrameRef = useRef<HTMLSpanElement | null>(null);
+  const hudPctRef = useRef<HTMLSpanElement | null>(null);
+  const hudCoordRef = useRef<HTMLSpanElement | null>(null);
+  const telScrollRef = useRef<HTMLElement | null>(null);
+  const telFpsRef = useRef<HTMLElement | null>(null);
+  const telTimeRef = useRef<HTMLElement | null>(null);
+  const telCoordRef = useRef<HTMLElement | null>(null);
+  const telViewRef = useRef<HTMLElement | null>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
