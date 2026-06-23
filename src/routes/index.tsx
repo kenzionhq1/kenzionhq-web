@@ -1393,7 +1393,7 @@ footer {
   .steps-row { grid-template-columns: 1fr; gap: 32px; }
   .plist::before { display: none; }
   .wgrid { grid-template-columns: 1fr; }
-  .scrollvid { height: 600vh; }
+  .scrollvid { height: 1100vh; }
   .scrollvid-tag { left: 24px; top: 96px; }
 }
 
