@@ -1821,7 +1821,7 @@ function Index() {
     ctx.drawImage(img, dx, dy, dw, dh);
   };
 
-  // Scroll-driven frame scrubbing
+  // Scroll-driven frame scrubbing — smoothed via lerp loop for cinematic feel
   useEffect(() => {
     const wrap = vidWrapRef.current;
     const bar = barRef.current;
@@ -1829,19 +1829,28 @@ function Index() {
     if (!wrap || !bar) return;
 
     let rafId = 0;
-    let ticking = false;
+    let targetProgress = 0;
+    let smoothProgress = 0;
+    const EASE = 0.085; // lower = slower / silkier
 
-    const update = () => {
-      ticking = false;
+    const measure = () => {
       const rect = wrap.getBoundingClientRect();
       const total = wrap.offsetHeight - window.innerHeight;
       const scrolledVal = Math.min(Math.max(-rect.top, 0), total);
-      const progress = total > 0 ? scrolledVal / total : 0;
-      bar.style.width = progress * 100 + "%";
+      targetProgress = total > 0 ? scrolledVal / total : 0;
+    };
+
+    const tick = () => {
+      smoothProgress += (targetProgress - smoothProgress) * EASE;
+      if (Math.abs(targetProgress - smoothProgress) < 0.00005) {
+        smoothProgress = targetProgress;
+      }
+
+      bar.style.width = smoothProgress * 100 + "%";
 
       const n = framesRef.current.length;
       if (n > 0) {
-        let idx = Math.round(progress * (totalFrames - 1));
+        let idx = Math.round(smoothProgress * (totalFrames - 1));
         if (idx < 0) idx = 0;
         if (idx > totalFrames - 1) idx = totalFrames - 1;
 
@@ -1856,20 +1865,26 @@ function Index() {
           lastIdxRef.current = probe;
           drawFrame(probe);
         }
+
+        // HUD updates
+        if (hudFrameRef.current) {
+          hudFrameRef.current.textContent =
+            String(probe + 1).padStart(3, "0") + " / " + String(totalFrames).padStart(3, "0");
+        }
+        if (hudPctRef.current) {
+          hudPctRef.current.textContent = (smoothProgress * 100).toFixed(1) + "%";
+        }
       }
+
       if (bg) bg.style.transform = `translateY(${window.scrollY * 0.2}px)`;
+
+      rafId = requestAnimationFrame(tick);
     };
 
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true;
-        rafId = requestAnimationFrame(update);
-      }
-    };
-
+    const onScroll = () => measure();
     const onResize = () => {
       if (lastIdxRef.current >= 0) drawFrame(lastIdxRef.current);
-      update();
+      measure();
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -1880,7 +1895,8 @@ function Index() {
     });
     if (canvasRef.current) ro.observe(canvasRef.current);
 
-    update();
+    measure();
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
@@ -1889,6 +1905,58 @@ function Index() {
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [totalFrames]);
+
+  // Live telemetry HUD (page-wide bottom strip + frame HUD coords)
+  useEffect(() => {
+    let raf = 0;
+    let frames = 0;
+    let lastFpsT = performance.now();
+    let fps = 60;
+    let mx = 0, my = 0;
+    const startT = performance.now();
+
+    const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; };
+    window.addEventListener("mousemove", onMove);
+
+    const fmt = (n: number, w = 2) => String(Math.floor(n)).padStart(w, "0");
+
+    const loop = () => {
+      frames++;
+      const now = performance.now();
+      if (now - lastFpsT >= 500) {
+        fps = Math.round((frames * 1000) / (now - lastFpsT));
+        frames = 0;
+        lastFpsT = now;
+      }
+      const doc = document.documentElement;
+      const scrollPct =
+        doc.scrollHeight > window.innerHeight
+          ? (window.scrollY / (doc.scrollHeight - window.innerHeight)) * 100
+          : 0;
+      const elapsed = (now - startT) / 1000;
+      const mm = Math.floor(elapsed / 60);
+      const ss = Math.floor(elapsed % 60);
+      const ms = Math.floor((elapsed * 100) % 100);
+
+      if (telScrollRef.current) telScrollRef.current.textContent = scrollPct.toFixed(1) + "%";
+      if (telFpsRef.current) telFpsRef.current.textContent = fps + " fps";
+      if (telTimeRef.current)
+        telTimeRef.current.textContent = `T+${fmt(mm)}:${fmt(ss)}.${fmt(ms)}`;
+      if (telCoordRef.current)
+        telCoordRef.current.textContent = `${fmt(mx, 4)} · ${fmt(my, 4)}`;
+      if (telViewRef.current)
+        telViewRef.current.textContent = `${window.innerWidth}×${window.innerHeight}`;
+      if (hudCoordRef.current)
+        hudCoordRef.current.textContent = `LAT ${fmt(mx % 90, 2)}.${fmt((mx * 13) % 100, 2)}  LON ${fmt(my % 180, 3)}.${fmt((my * 7) % 100, 2)}`;
+
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
     <div className={`kz ${theme === "dark" ? "dark-theme" : "light-theme"}`}>
