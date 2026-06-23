@@ -2476,6 +2476,17 @@ function Index() {
           <div className="fdot" /> Available for projects
         </div>
       </footer>
+
+      {/* Mission-control telemetry strip — fixed to viewport bottom */}
+      <div className="telemetry-strip" aria-hidden="true">
+        <div className="cell"><span className="led" /> <span>SYS · ONLINE</span></div>
+        <div className="cell">SCROLL <b ref={telScrollRef as React.RefObject<HTMLElement>}>0.0%</b></div>
+        <div className="cell">FPS <b ref={telFpsRef as React.RefObject<HTMLElement>}>60</b></div>
+        <div className="cell">VIEW <b ref={telViewRef as React.RefObject<HTMLElement>}>0×0</b></div>
+        <div className="cell">CURSOR <b ref={telCoordRef as React.RefObject<HTMLElement>}>0000 · 0000</b></div>
+        <div className="cell">UPTIME <b ref={telTimeRef as React.RefObject<HTMLElement>}>T+00:00.00</b></div>
+        <div className="cell">BUILD <b>2025.11 · ION-CYAN</b></div>
+      </div>
     </div>
   );
 }
