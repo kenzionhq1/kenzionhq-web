@@ -2240,11 +2240,37 @@ function Index() {
         ref={vidWrapRef as React.RefObject<HTMLElement>}
       >
         <div className="scrollvid-sticky">
-          <div className="scrollvid-tag">// kenzionhq.reel</div>
+          <div className="scrollvid-tag">// kenzionhq.reel · sequence_01</div>
           <canvas ref={canvasRef} className="scrollvid-canvas" />
           <div className="vid-grid" />
           <div className="vid-edge-fade top" />
           <div className="vid-edge-fade bottom" />
+
+          {/* NASA-style mission control HUD */}
+          <div className="hud-overlay" aria-hidden="true">
+            <div className="hud-ring" />
+            <div className="hud-crosshair" />
+            <div className="hud-ticks">
+              {Array.from({ length: 11 }).map((_, i) => (
+                <i key={i} className={i % 5 === 0 ? "major" : ""} />
+              ))}
+            </div>
+            <div className="hud-corner tl">
+              <span className="lbl">FRAME</span>
+              <span className="val" ref={hudFrameRef}>001 / {String(totalFrames).padStart(3, "0")}</span>
+              <span className="lbl">SCRUB</span>
+              <span className="val" ref={hudPctRef}>0.0%</span>
+            </div>
+            <div className="hud-corner bl">
+              <span className="lbl">SIGNAL · NOMINAL</span>
+              <span className="val">UPLINK · STABLE</span>
+            </div>
+            <div className="hud-corner br">
+              <span className="lbl">TRACKING</span>
+              <span className="val" ref={hudCoordRef}>LAT 00.00 LON 000.00</span>
+            </div>
+          </div>
+
           <div className="scrollvid-progress">
             <div className="bar" ref={barRef} />
           </div>
