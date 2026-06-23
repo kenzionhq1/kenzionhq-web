@@ -938,7 +938,137 @@ nav.scrolled {
   z-index: 4;
 }
 
-/* WORK */
+/* ============ MISSION CONTROL HUD ============ */
+.hud-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  font-family: var(--mono);
+  color: rgba(0, 255, 224, 0.85);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.hud-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 255, 224, 0.25);
+  backdrop-filter: blur(8px);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.hud-corner.tl { top: 48px; right: 64px; align-items: flex-end; }
+.hud-corner.bl { bottom: 28px; left: 64px; }
+.hud-corner.br { bottom: 28px; right: 64px; align-items: flex-end; }
+.hud-corner span.lbl { color: rgba(255,255,255,0.4); font-size: 8.5px; }
+.hud-corner span.val { color: #00ffe0; font-size: 13px; letter-spacing: 0.1em; }
+.hud-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 320px; height: 320px;
+  margin: -160px 0 0 -160px;
+  border: 1px solid rgba(0, 255, 224, 0.12);
+  border-radius: 50%;
+}
+.hud-ring::before, .hud-ring::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 1px dashed rgba(0,255,224,0.08);
+  animation: hud-rot 40s linear infinite;
+}
+.hud-ring::after { inset: 30px; border-style: dotted; animation-duration: 60s; animation-direction: reverse; }
+@keyframes hud-rot { to { transform: rotate(360deg); } }
+.hud-crosshair {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60px; height: 60px;
+  margin: -30px 0 0 -30px;
+  pointer-events: none;
+}
+.hud-crosshair::before, .hud-crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(0,255,224,0.5);
+}
+.hud-crosshair::before { left: 50%; top: 0; width: 1px; height: 100%; }
+.hud-crosshair::after { top: 50%; left: 0; height: 1px; width: 100%; }
+.hud-ticks {
+  position: absolute;
+  top: 0; bottom: 0; left: 28px;
+  width: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 80px 0;
+}
+.hud-ticks i {
+  display: block;
+  width: 14px;
+  height: 1px;
+  background: rgba(0,255,224,0.3);
+}
+.hud-ticks i.major { width: 24px; background: rgba(0,255,224,0.7); }
+
+/* ============ TOP TELEMETRY STRIP (page-wide) ============ */
+.telemetry-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 400;
+  display: flex;
+  gap: 0;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: rgba(4, 4, 10, 0.78);
+  border-top: 1px solid rgba(0, 255, 224, 0.18);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  color: rgba(255,255,255,0.55);
+}
+.kz.light-theme .telemetry-strip {
+  background: rgba(250, 250, 249, 0.85);
+  border-top-color: rgba(91, 79, 255, 0.2);
+  color: rgba(14,14,22,0.55);
+}
+.telemetry-strip .cell {
+  padding: 8px 18px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.telemetry-strip .cell:last-child { border-right: none; margin-left: auto; }
+.telemetry-strip .cell b {
+  color: var(--accent);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+.telemetry-strip .led {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 0 0 8px #00ff88;
+  animation: led-pulse 2.4s ease-in-out infinite;
+}
+@keyframes led-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+@media(max-width:900px) {
+  .telemetry-strip { font-size: 8.5px; overflow-x: auto; }
+  .telemetry-strip .cell { padding: 7px 12px; }
+  .hud-corner.tl { top: 96px; right: 24px; padding: 10px 12px; }
+  .hud-corner.bl { left: 24px; bottom: 56px; padding: 10px 12px; }
+  .hud-corner.br { right: 24px; bottom: 56px; padding: 10px 12px; }
+  .hud-ring { width: 200px; height: 200px; margin: -100px 0 0 -100px; }
+}
+
 #work {
   padding: 140px 56px;
   z-index: 1;
