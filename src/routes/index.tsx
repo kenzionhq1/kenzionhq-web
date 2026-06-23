@@ -833,7 +833,7 @@ nav.scrolled {
 
 /* VIDEO STICKY SCRUBBER */
 .scrollvid {
-  height: 800vh;
+  height: 1600vh;
   position: relative;
   z-index: 1;
 }
