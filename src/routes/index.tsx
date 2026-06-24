@@ -1409,6 +1409,33 @@ footer {
   .nlogo { font-size: 19px; }
   footer { padding: 28px 24px; flex-direction: column; text-align: center; }
 }
+
+@keyframes kzup {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.on {
+  opacity: 1;
+  transform: none;
+}
+.reveal-d1 {
+  transition-delay: 0.15s;
+}
+.reveal-d2 {
+  transition-delay: 0.3s;
+}
 `;
 
 function Index() {
